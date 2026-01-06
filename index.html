@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Masterclass - Interaktivní příručka</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --sidebar-width: 280px;
+            --chat-height: 400px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .nav-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.625rem 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .nav-item .chapter-num {
+            display: inline-block;
+            width: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Main content */
+        .main-wrapper {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem 3rem;
+            max-width: 900px;
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.375rem;
+            margin: 2rem 0 1rem;
+            color: var(--text);
+        }
+
+        .section h4 {
+            font-size: 1.125rem;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .section p {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .section ul, .section ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        .section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .section strong {
+            color: var(--primary);
+        }
+
+        /* Tables */
+        .section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .section th, .section td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+
+        .section th {
+            background: var(--bg-tertiary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .section tr:nth-child(even) {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Monaco', monospace;
+            font-size: 0.875rem;
+            position: relative;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Info boxes */
+        .info-box {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: var(--chat-height);
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-tertiary);
+        }
+
+        .chat-header h3 {
+            font-size: 0.9rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chat-header h3::before {
+            content: '💬';
+        }
+
+        .api-key-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .api-key-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            width: 200px;
+        }
+
+        .api-key-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .api-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .api-status.connected {
+            background: var(--success);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.5rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            max-width: 85%;
+        }
+
+        .message.user {
+            margin-left: auto;
+        }
+
+        .message-content {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: var(--bg-tertiary);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .message.user .message-label {
+            text-align: right;
+        }
+
+        .chat-input-container {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            resize: none;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Toggle chat button */
+        .toggle-chat {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            z-index: 100;
+            display: none;
+        }
+
+        .chat-panel.minimized {
+            display: none;
+        }
+
+        .chat-panel.minimized + .toggle-chat {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Loading animation */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 0.75rem 1rem;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                z-index: 1000;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-wrapper {
+                margin-left: 0;
+            }
+
+            .content-area {
+                padding: 1.5rem;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .chat-panel {
+                height: 50vh;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        /* Welcome hero */
+        .hero {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .hero h2 {
+            border: none;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .meta-item strong {
+            color: var(--text);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>AI Masterclass</h1>
+                <p>Interaktivní příručka pro PF komplet</p>
+            </div>
+            <div class="nav-container">
+                <div class="nav-section">
+                    <a class="nav-item active" data-section="intro">
+                        <span class="chapter-num">0.</span> Úvod
+                    </a>
+                    <a class="nav-item" data-section="section1">
+                        <span class="chapter-num">1.</span> PF komplet a AI
+                    </a>
+                    <a class="nav-item" data-section="section2">
+                        <span class="chapter-num">2.</span> Současný stav AI
+                    </a>
+                    <a class="nav-item" data-section="section3">
+                        <span class="chapter-num">3.</span> Jak fungují LLM
+                    </a>
+                    <a class="nav-item" data-section="section4">
+                        <span class="chapter-num">4.</span> Chatboty a srovnání
+                    </a>
+                    <a class="nav-item" data-section="section5">
+                        <span class="chapter-num">5.</span> Praktické využití
+                    </a>
+                    <a class="nav-item" data-section="section6">
+                        <span class="chapter-num">6.</span> Práce s dokumenty
+                    </a>
+                    <a class="nav-item" data-section="section7">
+                        <span class="chapter-num">7.</span> Promptování
+                    </a>
+                    <a class="nav-item" data-section="section8">
+                        <span class="chapter-num">8.</span> Praktické nástroje
+                    </a>
+                    <a class="nav-item" data-section="section9">
+                        <span class="chapter-num">9.</span> Bezpečnost a GDPR
+                    </a>
+                    <a class="nav-item" data-section="section10">
+                        <span class="chapter-num">10.</span> Strategie AI
+                    </a>
+                    <a class="nav-item" data-section="section11">
+                        <span class="chapter-num">11.</span> Cvičení
+                    </a>
+                    <a class="nav-item" data-section="section12">
+                        <span class="chapter-num">12.</span> Shrnutí
+                    </a>
+                    <a class="nav-item" data-section="appendix">
+                        <span class="chapter-num">+</span> Přílohy
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-wrapper">
+            <div class="content-area" id="content">
+                <!-- Intro Section -->
+                <div class="section active" id="intro">
+                    <div class="hero">
+                        <h2>AI Masterclass</h2>
+                        <p>Studijní příručka pro workshop o umělé inteligenci. Naučte se efektivně využívat AI nástroje ve vaší práci.</p>
+                        <div class="meta-info">
+                            <div class="meta-item"><strong>Datum:</strong> leden 2026</div>
+                            <div class="meta-item"><strong>Délka:</strong> 4 hodiny</div>
+                            <div class="meta-item"><strong>Lektoři:</strong> Senta a Miloš Čermákovi</div>
+                        </div>
+                    </div>
+
+                    <h3>O této příručce</h3>
+                    <p>Tato příručka vznikla speciálně pro workshop AI Masterclass určený společnosti PF komplet. Slouží jako kompletní studijní materiál, který můžete využít během workshopu i po něm.</p>
+                    <p>Obsahuje teoretické základy, praktické návody a konkrétní příklady využití AI ve vaší práci. Nevyžadujeme žádné předchozí technické znalosti – začneme od úplných základů.</p>
+
+                    <div class="info-box">
+                        <strong>Tip:</strong> Využijte chat v dolní části obrazovky pro dotazy k AI. Zadejte svůj Anthropic API klíč a můžete promptovat přímo zde!
+                    </div>
+
+                    <h3>Obsah workshopu</h3>
+                    <ol>
+                        <li>Úvod: PF komplet a umělá inteligence</li>
+                        <li>Současný stav generativní AI</li>
+                        <li>Jak fungují jazykové modely</li>
+                        <li>Hlavní chatboty a jejich srovnání</li>
+                        <li>Praktické využití AI v PF komplet</li>
+                        <li>Práce s dokumenty a jejich třídění</li>
+                        <li>Promptování – jak správně komunikovat s AI</li>
+                        <li>Praktické nástroje pro každodenní práci</li>
+                        <li>Bezpečnost, GDPR a ochrana dat</li>
+                        <li>Strategické využití AI v byznysu</li>
+                        <li>Hands-on cvičení</li>
+                        <li>Exekutivní shrnutí a další kroky</li>
+                    </ol>
+                </div>
+
+                <!-- Section 1 -->
+                <div class="section" id="section1">
+                    <h2>1. Úvod: PF komplet a umělá inteligence</h2>
+
+                    <h3>O společnosti PF komplet</h3>
+                    <p>PF komplet spol. s r.o. je zavedená úklidová firma sídlící v Praze (Praha 4, Nusle) se specializací na pravidelný úklid kancelářských a komerčních prostor. Firma má přes 50 zaměstnanců a více než 20 let zkušeností v oboru úklidových služeb.</p>
+
+                    <h3>Proč AI pro úklidovou firmu?</h3>
+                    <p>Může se zdát, že umělá inteligence je doménou technologických firem a startupů. Opak je pravdou. AI nástroje dnes pomáhají firmám napříč všemi odvětvími.</p>
+
+                    <p><strong>Kde může AI pomoci v PF komplet:</strong></p>
+                    <ul>
+                        <li><strong>Administrativa:</strong> Automatické třídění dokumentů, faktur a smluv</li>
+                        <li><strong>Komunikace:</strong> Rychlejší a profesionálnější odpovědi zákazníkům</li>
+                        <li><strong>Marketing:</strong> Tvorba obsahu pro web, blog a sociální sítě</li>
+                        <li><strong>HR:</strong> Příprava pracovních inzerátů a interních směrnic</li>
+                        <li><strong>Plánování:</strong> Optimalizace rozpisů a logistiky</li>
+                    </ul>
+
+                    <h3>Cíle tohoto workshopu</h3>
+                    <p>Po absolvování masterclass budete umět:</p>
+                    <ol>
+                        <li>Rozumět základním principům, jak AI funguje (a kde má limity)</li>
+                        <li>Používat ChatGPT a další nástroje pro běžné pracovní úkoly</li>
+                        <li>Formulovat efektivní zadání (prompty) pro kvalitní výstupy</li>
+                        <li>Pracovat bezpečně s citlivými firemními daty</li>
+                        <li>Identifikovat příležitosti pro využití AI ve vaší práci</li>
+                    </ol>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="section" id="section2">
+                    <h2>2. Současný stav generativní AI</h2>
+
+                    <h3>Co se změnilo za poslední rok</h3>
+                    <p>Generativní AI prošla od listopadu 2022, kdy byl spuštěn ChatGPT, obrovským vývojem. Základní principy zůstávají stejné, ale přibyly zásadní nové schopnosti:</p>
+
+                    <h4>Vyhledávání na internetu</h4>
+                    <p>Chatboty nyní umí kvalitně prohledávat online zdroje. Funkce Deep Research nabízí důkladné rešerše trvající 10–25 minut s desítkami ověřených zdrojů.</p>
+
+                    <h4>Práce s fotografiemi a videem</h4>
+                    <p>Generování obrázků dosáhlo vysoké kvality. Model Nano Banana v Gemini umožňuje udržet konzistenci obličeje napříč obrázky. Google Veo3 přinesl generování videí, kde postavy můžou "mluvit" jen na základě textového promptu.</p>
+
+                    <h4>Sora 2 od OpenAI</h4>
+                    <p>Generátor videí kombinující tvorbu obsahu se sociální sítí. Uživatel si naskenuje obličej a hlas, poté může vytvářet personalizovaná videa.</p>
+
+                    <h3>Růst uživatelské základny</h3>
+                    <table>
+                        <tr>
+                            <th>Období</th>
+                            <th>Milník</th>
+                        </tr>
+                        <tr>
+                            <td>Listopad 2022</td>
+                            <td>Spuštění ChatGPT, jednotky milionů uživatelů</td>
+                        </tr>
+                        <tr>
+                            <td>Duben 2023</td>
+                            <td>GPT-4 s možností nahrávání fotek a PDF</td>
+                        </tr>
+                        <tr>
+                            <td>Dnes</td>
+                            <td>Odhadem miliarda týdenních uživatelů generativní AI</td>
+                        </tr>
+                        <tr>
+                            <td>ChatGPT</td>
+                            <td>Přibližně 750–800 milionů týdenních uživatelů</td>
+                        </tr>
+                    </table>
+
+                    <h3>K čemu lidé AI skutečně používají</h3>
+                    <p>Harvard University a Duke University analyzovaly milion anonymizovaných konverzací z ChatGPT.</p>
+                    <p><strong>Hlavní zjištění:</strong> chatbot používají lidé většinově pro zábavu (70 % konverzací).</p>
+
+                    <table>
+                        <tr>
+                            <th>Kategorie</th>
+                            <th>Podíl</th>
+                        </tr>
+                        <tr>
+                            <td>Praktické rady (plánování cest, návody)</td>
+                            <td>29 %</td>
+                        </tr>
+                        <tr>
+                            <td>Hledání informací</td>
+                            <td>25 %</td>
+                        </tr>
+                        <tr>
+                            <td>Psaní a generování textů</td>
+                            <td>25 %</td>
+                        </tr>
+                        <tr>
+                            <td>Programování</td>
+                            <td>5 %</td>
+                        </tr>
+                        <tr>
+                            <td>Vztahy a reflexe</td>
+                            <td>jednotky procent</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box">
+                        <strong>Klíčové zjištění:</strong> Většina lidí používá AI pro zábavu a volný čas, nikoliv primárně pro práci. Ti, kdo ji zvládnou efektivně používat v práci, získávají konkurenční výhodu.
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="section" id="section3">
+                    <h2>3. Jak fungují jazykové modely</h2>
+
+                    <h3>Historický kontext</h3>
+                    <p>Umělá inteligence jako disciplína vznikla v roce 1956. Spojuje matematiku, počítačovou vědu, lingvistiku, psychologii a filozofii.</p>
+                    <p>Jazykové modely (LLM – Large Language Models) vznikly kolem let 2016–2017. Pro jejich fungování byly nutné tři podmínky:</p>
+                    <ol>
+                        <li><strong>Supervýkonné počítače</strong></li>
+                        <li><strong>Obrovské množství digitalizovaných textů</strong></li>
+                        <li><strong>Způsob, jak matematicky reprezentovat jazyk</strong></li>
+                    </ol>
+
+                    <h3>Jak vzniká jazykový model</h3>
+                    <p>Jazyk má přibližně 20 000 běžně používaných slov. Každé slovo se převede na vektor – řadu čísel vyjadřující jeho vztahy k ostatním slovům.</p>
+
+                    <div class="info-box">
+                        <strong>Příklad se slovem „máma":</strong><br>
+                        • Nejčastěji blízko: táta, děti, syn, dcera, rodina<br>
+                        • Méně často: kuchyně, domácnost<br>
+                        • Ještě méně: zasedačka, ředitelna<br>
+                        • Téměř nikdy: turbo zmíchadlo, kokain
+                    </div>
+
+                    <h3>Trénink modelu</h3>
+                    <p>Neuronová síť prochází miliardy vět a učí se předpovídat chybějící slova. Například ve větě „Na stole ležel počítač, telefon a ___" model tipuje. Když tipne špatně, upraví se pravděpodobnosti (reinforcement learning).</p>
+
+                    <p><strong>Parametry:</strong></p>
+                    <ul>
+                        <li>Trénink trvá týdny</li>
+                        <li>Stojí desítky milionů dolarů</li>
+                        <li>GPT-5 má odhadem 2 biliony parametrů</li>
+                        <li>Každé slovo reprezentuje vektor s desítkami tisíc hodnot</li>
+                    </ul>
+
+                    <h3>Tři klíčové vlastnosti jazykových modelů</h3>
+
+                    <h4>1. Generují nejpravděpodobnější odpověď, ne pravdu</h4>
+                    <p>Když se zeptáte „Jaké je hlavní město Francie?", model neprohledává databázi faktů. Podívá se na vstupní slova a vygeneruje nejpravděpodobnější odpověď – „Paříž".</p>
+
+                    <h4>2. Nehledají informace, ale vytvářejí je</h4>
+                    <p>Jazykový model nic nehledá – vše generuje nově na základě pravděpodobností. Proto může „halucinovat" – vytvořit přesvědčivě znějící, ale vymyšlené informace.</p>
+
+                    <h4>3. Neučí se nové informace</h4>
+                    <p>Po dokončení tréninku je model „zamrzlý". Všechny modely představené na podzim 2025 mají knowledge cutoff na konci roku 2024.</p>
+
+                    <h3>Chatbot vs. jazykový model</h3>
+                    <table>
+                        <tr>
+                            <th></th>
+                            <th>Jazykový model</th>
+                            <th>Chatbot</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Analogie</strong></td>
+                            <td>Motor</td>
+                            <td>Celé auto</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Obsah</strong></td>
+                            <td>Databáze parametrů + malý program</td>
+                            <td>Model + vyhledávání + paměť + rozhraní</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Příklad</strong></td>
+                            <td>GPT-4, Claude 3.5</td>
+                            <td>ChatGPT, Claude.ai</td>
+                        </tr>
+                    </table>
+
+                    <h3>Silné stránky AI</h3>
+                    <ul>
+                        <li><strong>Pochopení kontextu:</strong> Rozlišuje „myš" (zvíře) od „myš" (počítačová)</li>
+                        <li><strong>Sarkasmus a metafory:</strong> Překvapivě dobře chápe i nuance jazyka</li>
+                        <li><strong>Obrovská „paměť":</strong> GPT-5 má znalosti kardiologa s 10letou praxí</li>
+                        <li><strong>Generování textu:</strong> Umí psát různé formy textů</li>
+                        <li><strong>Přizpůsobení tónu:</strong> Formální, stručný, populární styl</li>
+                        <li><strong>Překládání:</strong> Kvalitně překládá mezi desítkami jazyků</li>
+                    </ul>
+
+                    <h3>Slabé stránky a omezení</h3>
+
+                    <div class="warning-box">
+                        <strong>Halucinace (výmysly)</strong><br>
+                        Modely mohou sebevědomě tvrdit nepravdivé informace. Příklad: Právník použil ChatGPT k nalezení soudních judikátů a AI si několik precedentů zcela vymyslela.
+                    </div>
+
+                    <ul>
+                        <li><strong>Neaktuální znalosti:</strong> Standardní ChatGPT má znalosti pouze do svého knowledge cutoff</li>
+                        <li><strong>Neschopnost ověřit fakta:</strong> AI neprochází žádnou vnitřní kontrolou pravdy</li>
+                        <li><strong>Bias (zkreslení):</strong> Model vstřebal předsudky z internetu</li>
+                        <li><strong>Nekonzistentní odpovědi:</strong> Stejný dotaz může dát různé výsledky</li>
+                    </ul>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="section" id="section4">
+                    <h2>4. Hlavní chatboty a jejich srovnání</h2>
+
+                    <h3>„Velká trojka" + další hráči</h3>
+
+                    <h4>Tier 1 – Zlatý standard</h4>
+                    <table>
+                        <tr>
+                            <th>Chatbot</th>
+                            <th>Výrobce</th>
+                            <th>Hlavní výhody</th>
+                        </tr>
+                        <tr>
+                            <td><strong>ChatGPT</strong></td>
+                            <td>OpenAI</td>
+                            <td>Nejrozšířenější, nejlepší hlasový mód, standard odvětví</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Claude</strong></td>
+                            <td>Anthropic</td>
+                            <td>Vynikající psaní, analytické schopnosti</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gemini</strong></td>
+                            <td>Google</td>
+                            <td>Nejlepší generování obrázků, milion tokenů kontextu</td>
+                        </tr>
+                    </table>
+
+                    <h4>Tier 2 – Kvalitní alternativy</h4>
+                    <table>
+                        <tr>
+                            <th>Chatbot</th>
+                            <th>Výrobce</th>
+                            <th>Poznámka</th>
+                        </tr>
+                        <tr>
+                            <td>Grok</td>
+                            <td>xAI (Elon Musk)</td>
+                            <td>Vysoký výpočetní výkon, méně omezení</td>
+                        </tr>
+                        <tr>
+                            <td>Copilot</td>
+                            <td>Microsoft</td>
+                            <td>Využívá modely OpenAI, integrace s Office 365</td>
+                        </tr>
+                        <tr>
+                            <td>Mistral</td>
+                            <td>Mistral AI</td>
+                            <td>Jediný významný evropský model</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box">
+                        <strong>Analogie s auty:</strong> Všechny chatboty jsou jako auta stejné třídy – ovládají se stejně. Když umíte jeden, umíte všechny. Rozdíly jsou v detailech.
+                    </div>
+
+                    <h3>Který vybrat?</h3>
+                    <p><strong>Doporučení:</strong> Zaplaťte si ChatGPT (20 USD/měsíc), ale vyzkoušejte všechny ostatní zdarma.</p>
+
+                    <p><strong>ChatGPT výhody:</strong></p>
+                    <ul>
+                        <li>Zlatý standard – nikdo vám nevyčte tuto volbu</li>
+                        <li>Nejlepší hlasový mód (opravuje i výslovnost při učení jazyků)</li>
+                        <li>Generování obrázků i videí (Sora)</li>
+                        <li>Deep Research</li>
+                        <li>Propojení s e-mailem a kalendářem</li>
+                    </ul>
+
+                    <h3>Typy modelů v ChatGPT</h3>
+                    <table>
+                        <tr>
+                            <th>Typ</th>
+                            <th>Chování</th>
+                            <th>Vhodné pro</th>
+                        </tr>
+                        <tr>
+                            <td>Instant (rychlý)</td>
+                            <td>Okamžitá odpověď</td>
+                            <td>Běžné psaní, jednoduché dotazy</td>
+                        </tr>
+                        <tr>
+                            <td>Thinking (přemýšlivý)</td>
+                            <td>Nejprve plánuje, pak odpovídá</td>
+                            <td>Komplexní úlohy, analýzy</td>
+                        </tr>
+                    </table>
+
+                    <h3>Užitečná nastavení ChatGPT</h3>
+                    <h4>Paměť (Memory)</h4>
+                    <ul>
+                        <li>Defaultně zapnutá od září 2024</li>
+                        <li>Sbírá informace o vás z konverzací</li>
+                        <li>Umožňuje personalizované odpovědi</li>
+                    </ul>
+
+                    <h4>Deep Research</h4>
+                    <ul>
+                        <li>10–25 minut důkladného průzkumu</li>
+                        <li>Desítky zdrojů, ozdrojované výstupy</li>
+                        <li>Najde i insolvenční rejstříky, dotace, sociální sítě</li>
+                    </ul>
+                </div>
+
+                <!-- Section 5 -->
+                <div class="section" id="section5">
+                    <h2>5. Praktické využití AI v PF komplet</h2>
+
+                    <h3>Komunikace se zákazníky</h3>
+                    <p>ChatGPT může asistovat při tvorbě odpovědí na zákaznické dotazy nebo stížnosti.</p>
+
+                    <h4>Příklad – odpověď na reklamaci</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš zdvořilou odpověď na stížnost klienta, který si stěžuje na nedostatečný úklid
+v zasedací místnosti. Zahrň omluvu, vysvětlení a nabídku nápravy. Tón má být
+profesionální, ale vstřícný.</pre>
+                    </div>
+
+                    <h4>Příklad – nabídkový e-mail</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš zdvořilý e-mail, kde nabídneme naše úklidové služby nově otevřenému
+co-working centru. Vypíchni naše přednosti (spolehlivost, 20 let zkušeností,
+flexibilita) a navrhni osobní schůzku.</pre>
+                    </div>
+
+                    <h3>Marketing a obsah pro web</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Vytvoř krátký článek (300 slov) na téma: Proč je důležité udržovat kancelář čistou
+– 5 důvodů pro kvalitní úklid. Zaměř se na produktivitu zaměstnanců, první dojem
+u klientů a zdraví na pracovišti.</pre>
+                    </div>
+
+                    <h3>HR a interní dokumenty</h3>
+                    <h4>Pracovní inzeráty</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš pracovní inzerát na pozici uklízečky pro firmu PF komplet. Náplň práce:
+úklid kancelářských prostor v Praze. Požadavky: spolehlivost, pečlivost.
+Benefity: stabilní zaměstnání, pravidelná pracovní doba, možnost přesčasů.</pre>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>Upozornění:</strong> U právních dokumentů (smlouvy, dohody) musí finální revizi udělat kompetentní osoba (právník). AI není právní autorita.
+                    </div>
+
+                    <h3>Plánování a logistika</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Máme 10 pracovníků a 15 zakázek týdně v různých lokalitách v Praze. Navrhni
+základní strukturu rozvrhu, aby nikdo nemusel být na dvou místech zároveň
+a aby každý měl cca stejnou vytíženost.</pre>
+                    </div>
+                </div>
+
+                <!-- Section 6 -->
+                <div class="section" id="section6">
+                    <h2>6. Práce s dokumenty a jejich třídění</h2>
+
+                    <h3>Automatizované třídění dokumentů</h3>
+                    <p>Jedno z hlavních témat je třídění dokumentů pomocí AI. V kanceláři koluje množství různých dokumentů – smlouvy, objednávky, faktury, provozní záznamy, interní směrnice.</p>
+
+                    <h3>Rozpoznání typu dokumentu</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Analyzuj následující text a urči, o jaký typ dokumentu se jedná (faktura, smlouva,
+interní směrnice, objednávka, jiné). Vysvětli, podle čeho jsi to poznal.
+
+[vložte text dokumentu]</pre>
+                    </div>
+
+                    <h3>Extrakce klíčových údajů</h3>
+                    <table>
+                        <tr>
+                            <th>Typ dokumentu</th>
+                            <th>Klíčové údaje</th>
+                        </tr>
+                        <tr>
+                            <td>Faktura</td>
+                            <td>Datum vystavení, částka, dodavatel, splatnost</td>
+                        </tr>
+                        <tr>
+                            <td>Smlouva</td>
+                            <td>Smluvní strany, platnost, cena, předmět</td>
+                        </tr>
+                        <tr>
+                            <td>Docházkový list</td>
+                            <td>Jména zaměstnanců, odpracované hodiny</td>
+                        </tr>
+                    </table>
+
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Z následující faktury vypiš tyto údaje:
+- Dodavatel (název, IČO)
+- Datum vystavení
+- Datum splatnosti
+- Celková částka bez DPH
+- Celková částka s DPH
+
+[vložte text faktury]</pre>
+                    </div>
+
+                    <h3>Summarizace obsahu dokumentu</h3>
+                    <p>AI dovede zestručnit obsah dlouhých dokumentů:</p>
+                    <ul>
+                        <li>10stránkový provozní manuál → jednoodstavcové shrnutí</li>
+                        <li>Dlouhý e-mailový thread → seznam úkolů a termínů</li>
+                        <li>Vícestránková smlouva → hlavní závazky a termíny</li>
+                    </ul>
+
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Shrň následující smlouvu do 5 hlavních bodů. Zaměř se na: smluvní strany,
+předmět smlouvy, cenu, dobu trvání a podmínky ukončení.
+
+[vložte text smlouvy]</pre>
+                    </div>
+                </div>
+
+                <!-- Section 7 -->
+                <div class="section" id="section7">
+                    <h2>7. Promptování – jak správně komunikovat s AI</h2>
+
+                    <h3>Základní pravidla</h3>
+                    <ol>
+                        <li><strong>Vysvětlujte jako člověku</strong> – Co nepochopí kolega, nepochopí ani AI</li>
+                        <li><strong>Nechte AI napsat prompt za vás</strong> – AI zná své schopnosti lépe než vy</li>
+                        <li><strong>Začínejte nové konverzace</strong> – Dlouhé konverzace zhoršují kvalitu</li>
+                        <li><strong>Dejte AI roli</strong> – „Jsi zkušený HR specialista..."</li>
+                    </ol>
+
+                    <h3>Struktura efektivního promptu (Sentina metoda)</h3>
+                    <ol>
+                        <li><strong>Role:</strong> Kdo AI je („Jsi můj asistent pro zákaznický servis")</li>
+                        <li><strong>Pochvala:</strong> Motivační prvek („Jsi v tom nejlepší")</li>
+                        <li><strong>Úkol:</strong> Co má vzniknout („Napiš odpověď na reklamaci")</li>
+                        <li><strong>Kontext:</strong> Pro koho, proč, kam směřuje</li>
+                        <li><strong>Příklady:</strong> Konkrétní situace, projekty</li>
+                        <li><strong>Interakce:</strong> „Polož mi 5 otázek, abys zjistil více"</li>
+                    </ol>
+
+                    <h3>Příklad komplexního promptu</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Jsi zkušený specialista na zákaznický servis v úklidové firmě s 20letou tradicí.
+
+Potřebuji připravit odpověď na stížnost klienta. Situace:
+- Klient si stěžuje na nedostatečný úklid zasedací místnosti
+- Úklid proběhl včera večer
+- Klient je dlouhodobý zákazník (3 roky)
+
+Požadavky na odpověď:
+- Tón: profesionální, empatický, vstřícný
+- Délka: max 150 slov
+- Struktura: omluva, vysvětlení, nabídka řešení
+
+Než napíšeš odpověď, polož mi 3 otázky, které ti pomohou lépe pochopit situaci.</pre>
+                    </div>
+
+                    <h3>Tipy pro efektivní práci</h3>
+                    <table>
+                        <tr>
+                            <th>Špatně</th>
+                            <th>Dobře</th>
+                        </tr>
+                        <tr>
+                            <td>„Napiš e-mail klientovi"</td>
+                            <td>„Napiš e-mail klientovi s omluvou za zpoždění, max 100 slov, formální tón"</td>
+                        </tr>
+                        <tr>
+                            <td>„Shrň tento dokument"</td>
+                            <td>„Shrň tento dokument do 3 vět, zaměř se na termíny a částky"</td>
+                        </tr>
+                    </table>
+
+                    <h3>Čeština vs. angličtina</h3>
+                    <p>Jazykovému modelu je matematicky jedno, v jakém jazyce píšete – pracuje s vektory, ne se slovy.</p>
+                    <ul>
+                        <li><strong>Výhody angličtiny:</strong> Lepší rýmování, některé funkce pouze v angličtině</li>
+                        <li><strong>Výhody češtiny:</strong> Přirozenější formulace, kontextově relevantní odpovědi</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>Tip pro překlady:</strong> Použijte DeepL pro překlad, pak vložte oba texty do ChatGPT s promptem: „Porovnej překlad s originálem a upozorni na významové rozdíly."
+                    </div>
+                </div>
+
+                <!-- Section 8 -->
+                <div class="section" id="section8">
+                    <h2>8. Praktické nástroje pro každodenní práci</h2>
+
+                    <h3>Notebook LM (Google)</h3>
+                    <p><strong>Co to je:</strong> Bezplatný nástroj pro práci se zdroji – „kodexis pro všechny"</p>
+                    <ul>
+                        <li>Hledá POUZE v nahraných zdrojích (minimální halucinace)</li>
+                        <li>Zdarma</li>
+                        <li>Využívá jazykový model Gemini</li>
+                    </ul>
+
+                    <p><strong>Podporované formáty:</strong> PDF, TXT, Markdown, Word, zvukové soubory, YouTube videa, obrázky s textem</p>
+
+                    <p><strong>Speciální funkce:</strong></p>
+                    <ul>
+                        <li><strong>Infografika:</strong> Vizuální shrnutí článku jedním kliknutím</li>
+                        <li><strong>Myšlenková mapa:</strong> Interaktivní rozklikávání témat</li>
+                        <li><strong>Audio přehled:</strong> Dva AI hlasy diskutují o vašich zdrojích</li>
+                    </ul>
+
+                    <h3>11Labs</h3>
+                    <p><strong>Co to je:</strong> Nástroj pro práci s hlasem a zvukem</p>
+                    <table>
+                        <tr>
+                            <th>Funkce</th>
+                            <th>Popis</th>
+                            <th>Využití</th>
+                        </tr>
+                        <tr>
+                            <td>Speech-to-Text</td>
+                            <td>Přepis nahrávek</td>
+                            <td>Zápisy z porad, rozhovorů</td>
+                        </tr>
+                        <tr>
+                            <td>Text-to-Speech</td>
+                            <td>Generování hlasu</td>
+                            <td>Namluvení instrukcí</td>
+                        </tr>
+                        <tr>
+                            <td>Dabování</td>
+                            <td>Překlad videí</td>
+                            <td>Vícejazyčný obsah</td>
+                        </tr>
+                    </table>
+
+                    <h3>Perplexity</h3>
+                    <p><strong>Co to je:</strong> „Lepší Google" – vyhledávač s AI</p>
+                    <ul>
+                        <li>Přímé odpovědi místo seznamu odkazů</li>
+                        <li>Ozdrojované informace</li>
+                        <li>Žádné sponzorované výsledky (zatím)</li>
+                        <li>Deep Research (3minutová verze)</li>
+                    </ul>
+
+                    <h3>Gamma</h3>
+                    <p><strong>Co to je:</strong> Nástroj pro tvorbu prezentací pomocí AI</p>
+                    <ol>
+                        <li>Vložíte podklady (text, přepis, poznámky)</li>
+                        <li>Zvolíte: „Vygenerovat" nebo „Sumarizovat"</li>
+                        <li>Nastavíte poměr text/obrázky, jazyk, šablonu</li>
+                        <li>AI vytvoří kompletní prezentaci</li>
+                    </ol>
+
+                    <h3>Whisperflow</h3>
+                    <p><strong>Co to je:</strong> Aplikace pro přepis mluveného slova do textu v reálném čase</p>
+                    <ul>
+                        <li>Funguje kdekoli v počítači</li>
+                        <li>Stisknete klávesu → mluvíte → text se píše</li>
+                        <li>Ideální pro rychlé zadávání promptů</li>
+                    </ul>
+                </div>
+
+                <!-- Section 9 -->
+                <div class="section" id="section9">
+                    <h2>9. Bezpečnost, GDPR a ochrana dat</h2>
+
+                    <h3>Kde probíhají výpočty</h3>
+                    <p>Všechny výpočty probíhají v cloudu – jazykové modely jsou příliš velké pro běžné počítače. To znamená, že vaše data putují na servery třetích stran.</p>
+
+                    <h3>Jak zachází ChatGPT s uživatelskými daty</h3>
+                    <table>
+                        <tr>
+                            <th>Verze</th>
+                            <th>Použití dat k tréninku</th>
+                        </tr>
+                        <tr>
+                            <td>Free ChatGPT</td>
+                            <td>Ano (ve výchozím nastavení)</td>
+                        </tr>
+                        <tr>
+                            <td>ChatGPT Plus (osobní)</td>
+                            <td>Ano (lze vypnout)</td>
+                        </tr>
+                        <tr>
+                            <td>ChatGPT Enterprise/Business</td>
+                            <td>Ne</td>
+                        </tr>
+                        <tr>
+                            <td>API</td>
+                            <td>Ne</td>
+                        </tr>
+                    </table>
+
+                    <div class="warning-box">
+                        <strong>Reálné bezpečnostní incidenty:</strong><br>
+                        <strong>Samsung:</strong> Zaměstnanci vložili do ChatGPT zdrojový kód a interní poznámky.<br>
+                        <strong>ChatGPT bug (březen 2023):</strong> Kvůli chybě se zobrazovaly uživatelům výpisy cizích konverzací.
+                    </div>
+
+                    <h3>Firemní pravidla pro používání AI</h3>
+                    <table>
+                        <tr>
+                            <th>NIKDY nevkládat</th>
+                            <th>Příklady</th>
+                        </tr>
+                        <tr>
+                            <td>Citlivé osobní údaje</td>
+                            <td>Rodná čísla, adresy zaměstnanců</td>
+                        </tr>
+                        <tr>
+                            <td>Obchodní tajemství</td>
+                            <td>Cenové kalkulace, marže</td>
+                        </tr>
+                        <tr>
+                            <td>Kompletní smlouvy</td>
+                            <td>S reálnými jmény a částkami</td>
+                        </tr>
+                        <tr>
+                            <td>Finanční výkazy</td>
+                            <td>Výsledky hospodaření</td>
+                        </tr>
+                        <tr>
+                            <td>Hesla a přístupy</td>
+                            <td>Jakékoliv přihlašovací údaje</td>
+                        </tr>
+                    </table>
+
+                    <h3>Nastavení ochrany v ChatGPT</h3>
+                    <p><strong>Postup:</strong> Settings → Data Controls → „Improve the model for everyone" → vypnout</p>
+
+                    <h3>Shrnutí bezpečnostních doporučení</h3>
+                    <ol>
+                        <li><strong>Zavedení interní směrnice:</strong> Co se smí a nesmí vkládat do AI</li>
+                        <li><strong>Školení zaměstnanců:</strong> Všichni by měli znát rizika</li>
+                        <li><strong>Anonymizace citlivých dat:</strong> Před vložením do AI</li>
+                        <li><strong>Zvážení enterprise verze:</strong> Pro práci s citlivými dokumenty</li>
+                        <li><strong>Kontrola výstupů:</strong> AI není autorita, člověk musí ověřit</li>
+                    </ol>
+                </div>
+
+                <!-- Section 10 -->
+                <div class="section" id="section10">
+                    <h2>10. Strategické využití AI v byznysu</h2>
+
+                    <h3>Filosofie použití</h3>
+                    <div class="info-box">
+                        <strong>Nepodřezávejte si vlastní židli:</strong><br>
+                        • AI nechte dělat to, co vás nebaví (administrativa, rutina)<br>
+                        • Věci, které vás baví, si nechte – jinak ztratíte smysl práce<br>
+                        • Kolem lidí buďte osobně (hodnocení, coaching, náročné rozhovory)
+                    </div>
+
+                    <h3>Implementace ve firmách</h3>
+                    <p><strong>Nejlepší přístup: Ambasadoři</strong></p>
+                    <p>Vyberte 2–5 nadšenců z týmu, kteří si vezmou na starost pilotní vyzkoušení AI. Jejich nadšení se šíří organicky.</p>
+
+                    <p><strong>Nejhorší přístup:</strong> „Koupíme licenci všem a uvidíme" – Bez vedení a podpory adopce nevznikne.</p>
+
+                    <h3>Human in the loop</h3>
+                    <p><strong>Zásadní princip:</strong> AI asistuje, nerozhoduje.</p>
+                    <table>
+                        <tr>
+                            <th>Oblast</th>
+                            <th>AI udělá</th>
+                            <th>Člověk udělá</th>
+                        </tr>
+                        <tr>
+                            <td>Dokumenty</td>
+                            <td>Navrhne třídění</td>
+                            <td>Zkontroluje a schválí</td>
+                        </tr>
+                        <tr>
+                            <td>Komunikace</td>
+                            <td>Připraví odpověď</td>
+                            <td>Upraví a odešle</td>
+                        </tr>
+                        <tr>
+                            <td>Plánování</td>
+                            <td>Navrhne rozpis</td>
+                            <td>Ověří a implementuje</td>
+                        </tr>
+                    </table>
+
+                    <h3>Strategické nástroje</h3>
+                    <h4>SWOT analýza s AI</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Proveď SWOT analýzu úklidové firmy s 50 zaměstnanci působící v Praze.
+Zaměř se na:
+- Silné stránky: 20 let zkušeností, stabilní tým
+- Slabé stránky: závislost na pražském trhu
+- Příležitosti: rostoucí poptávka po specializovaných službách
+- Hrozby: konkurence, růst nákladů</pre>
+                    </div>
+                </div>
+
+                <!-- Section 11 -->
+                <div class="section" id="section11">
+                    <h2>11. Hands-on cvičení</h2>
+
+                    <h3>Cvičení 1: Seznámení s rozhraním</h3>
+                    <p><strong>Úkol:</strong> Založte si účet na chat.openai.com a prozkoumejte rozhraní.</p>
+                    <ul>
+                        <li>Kde se píší dotazy</li>
+                        <li>Jak funguje historie chatů (vlevo)</li>
+                        <li>Jak založit nový chat</li>
+                        <li>Kde se přepínají modely</li>
+                    </ul>
+
+                    <h3>Cvičení 2: Sparring partner pro e-mail</h3>
+                    <p><strong>Scénář:</strong> Napište klientovi omluvu za zpoždění v poskytnutí služby a nabídněte kompenzaci.</p>
+                    <ol>
+                        <li>Zkuste zadat vlastní prompt</li>
+                        <li>Porovnejte výsledky s kolegy</li>
+                        <li>Zkuste upřesnit zadání (role, tón, délka)</li>
+                    </ol>
+
+                    <h3>Cvičení 3: Třídění dokumentu</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Analyzuj následující text a odpověz:
+1. O jaký typ dokumentu se jedná?
+2. Jaké jsou klíčové údaje?
+3. Co byste doporučili s tímto dokumentem udělat?
+
+[vložte text]</pre>
+                    </div>
+
+                    <h3>Cvičení 4: Tvůrčí úkol</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Vytvoř 5 reklamních sloganů pro úklidovou firmu PF komplet.
+Hodnoty firmy: spolehlivost, 20 let zkušeností, kvalita, profesionalita.
+Slogany by měly být krátké (max 8 slov), zapamatovatelné a vhodné
+pro použití na webu a vizitky.</pre>
+                    </div>
+
+                    <h3>Cvičení 5: Bonus – hlasové ovládání</h3>
+                    <p><strong>Ukázka:</strong> Demonstrujeme nadiktování úkolu v mobilní aplikaci ChatGPT.</p>
+                    <p>„Popiš v bodech, jak připravit zasedačku na návštěvu klienta."</p>
+                </div>
+
+                <!-- Section 12 -->
+                <div class="section" id="section12">
+                    <h2>12. Exekutivní shrnutí a další kroky</h2>
+
+                    <h3>Co si zapamatovat</h3>
+
+                    <h4>O technologii</h4>
+                    <ul>
+                        <li>Jazykové modely generují nejpravděpodobnější odpovědi, ne pravdivé</li>
+                        <li>Nemohou se učit nové informace po tréninku</li>
+                        <li>Halucinují přesvědčivě – vždy ověřujte důležité informace</li>
+                        <li>Knowledge cutoff aktuálních modelů: konec 2024</li>
+                    </ul>
+
+                    <h4>O nástrojích</h4>
+                    <table>
+                        <tr>
+                            <th>Nástroj</th>
+                            <th>Cena</th>
+                            <th>Hlavní využití</th>
+                        </tr>
+                        <tr>
+                            <td>ChatGPT</td>
+                            <td>20 USD/měsíc</td>
+                            <td>Univerzální asistent</td>
+                        </tr>
+                        <tr>
+                            <td>Notebook LM</td>
+                            <td>Zdarma</td>
+                            <td>Práce se zdroji</td>
+                        </tr>
+                        <tr>
+                            <td>Perplexity</td>
+                            <td>Zdarma / 20 USD</td>
+                            <td>Vyhledávání</td>
+                        </tr>
+                        <tr>
+                            <td>11Labs</td>
+                            <td>Od 12 USD</td>
+                            <td>Přepisy, hlas</td>
+                        </tr>
+                        <tr>
+                            <td>Gamma</td>
+                            <td>Zdarma / placené</td>
+                            <td>Prezentace</td>
+                        </tr>
+                    </table>
+
+                    <h3>Doporučené první kroky pro PF komplet</h3>
+                    <ol>
+                        <li><strong>Tento týden:</strong> Vyberte 2–3 „ambasadory" z týmu</li>
+                        <li><strong>Do měsíce:</strong> Vytvořte interní směrnici o bezpečném používání AI</li>
+                        <li><strong>Pilotní projekt:</strong> Zvolte jeden konkrétní proces a zkuste ho zefektivnit</li>
+                        <li><strong>Vyhodnocení:</strong> Po měsíci zhodnoťte úspory času a kvalitu</li>
+                    </ol>
+
+                    <h3>Doporučené první kroky pro jednotlivce</h3>
+                    <ol>
+                        <li>Zaregistrujte se do ChatGPT, Claude a Gemini (vše zdarma)</li>
+                        <li>Vyzkoušejte Notebook LM s vlastními dokumenty</li>
+                        <li>Nahrajte zvukový soubor a nechte ho přepsat</li>
+                        <li>Použijte Deep Research na téma, které vás zajímá</li>
+                        <li>Vytvořte prezentaci v Gammě</li>
+                    </ol>
+
+                    <h3>Kam dál</h3>
+                    <ul>
+                        <li><strong>Dokumentace:</strong> docs.claude.com, help.openai.com</li>
+                        <li><strong>Prompty:</strong> Hledejte na oficiálních stránkách výrobců. Nikdy neplaťte za prompty.</li>
+                        <li><strong>Další školení:</strong> Inspiruj se (Senta a Miloš Čermákovi)</li>
+                    </ul>
+                </div>
+
+                <!-- Appendix -->
+                <div class="section" id="appendix">
+                    <h2>Přílohy</h2>
+
+                    <h3>Příloha A: Checklist bezpečné práce s AI</h3>
+
+                    <h4>Před použitím AI zkontrolujte:</h4>
+                    <ul class="checklist">
+                        <li>Neobsahuje text osobní údaje (jména, adresy, rodná čísla)?</li>
+                        <li>Neobsahuje text obchodní tajemství?</li>
+                        <li>Je v pořádku, pokud se tento text dostane mimo firmu?</li>
+                        <li>Mám vypnutou historii chatů (pokud pracuji s citlivějšími daty)?</li>
+                    </ul>
+
+                    <h4>Po použití AI zkontrolujte:</h4>
+                    <ul class="checklist">
+                        <li>Je odpověď fakticky správná?</li>
+                        <li>Neobsahuje AI halucinace (vymyšlené údaje)?</li>
+                        <li>Je tón a styl odpovídající?</li>
+                        <li>Upravil jsem text podle potřeb firmy?</li>
+                    </ul>
+
+                    <h3>Příloha B: Užitečné prompty pro PF komplet</h3>
+
+                    <h4>Odpověď na dotaz zákazníka</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš profesionální odpověď na dotaz zákazníka ohledně [téma].
+Zahrň: poděkování za zájem, odpověď na dotaz, nabídku další pomoci.
+Tón: přátelský, profesionální. Max 100 slov.</pre>
+                    </div>
+
+                    <h4>Odpověď na stížnost</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš empatickou odpověď na stížnost zákazníka. Situace: [popis].
+Zahrň: omluvu, vysvětlení, konkrétní řešení, ujištění o zlepšení.
+Tón: profesionální, vstřícný, bez defenzivity.</pre>
+                    </div>
+
+                    <h4>Příspěvek na LinkedIn</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš krátký příspěvek na LinkedIn pro úklidovou firmu na téma [téma].
+Délka: max 150 slov. Zakonči výzvou k akci nebo otázkou pro diskusi.</pre>
+                    </div>
+
+                    <h4>Pracovní inzerát</h4>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Kopírovat</button>
+                        <pre>Napiš pracovní inzerát na pozici [pozice].
+Zahrň: popis firmy (úklidová firma, 20 let na trhu, Praha),
+náplň práce, požadavky, benefity.
+Tón: profesionální, ale přívětivý.</pre>
+                    </div>
+
+                    <h3>Příloha C: Slovníček pojmů</h3>
+                    <table>
+                        <tr>
+                            <th>Pojem</th>
+                            <th>Vysvětlení</th>
+                        </tr>
+                        <tr>
+                            <td><strong>AI</strong></td>
+                            <td>Artificial Intelligence – systémy schopné vykonávat úkoly vyžadující lidskou inteligenci</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LLM</strong></td>
+                            <td>Large Language Model – typ AI natrénovaný na obrovském množství textu</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Chatbot</strong></td>
+                            <td>Konverzační rozhraní pro komunikaci s AI</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Prompt</strong></td>
+                            <td>Zadání/instrukce, které dáváte AI</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Halucinace</strong></td>
+                            <td>Situace, kdy AI vygeneruje přesvědčivě znějící, ale nepravdivé informace</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Knowledge cutoff</strong></td>
+                            <td>Datum, do kterého má AI znalosti z tréninku</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Token</strong></td>
+                            <td>Jednotka textu (přibližně slovo nebo jeho část)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fine-tuning</strong></td>
+                            <td>Dotrénování modelu na specifických datech</td>
+                        </tr>
+                        <tr>
+                            <td><strong>API</strong></td>
+                            <td>Rozhraní pro programové propojení s AI</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Deep Research</strong></td>
+                            <td>Funkce pro důkladné rešerše s více zdroji</td>
+                        </tr>
+                    </table>
+
+                    <h3>Kontakt</h3>
+                    <p><strong>Lektoři:</strong> Senta a Miloš Čermákovi<br>
+                    <strong>Firma:</strong> Inspiruj se<br>
+                    <strong>Web:</strong> www.inspiruj.se</p>
+
+                    <div class="info-box">
+                        <em>Tato příručka byla vytvořena pro interní potřeby společnosti PF komplet spol. s r.o.</em><br>
+                        <em>AI Masterclass | Inspiruj se | leden 2026</em>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Panel -->
+            <div class="chat-panel" id="chatPanel">
+                <div class="chat-header">
+                    <h3>Vyzkoušejte AI asistenta</h3>
+                    <div class="api-key-container">
+                        <input type="password" class="api-key-input" id="apiKey" placeholder="Anthropic API klíč...">
+                        <div class="api-status" id="apiStatus" title="API stav"></div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-label">Claude</div>
+                        <div class="message-content">
+                            Ahoj! Jsem Claude, AI asistent od Anthropic. Můžeš mi klást otázky k obsahu této příručky nebo vyzkoušet prompty přímo zde. Zadej svůj API klíč vpravo nahoře pro zahájení konverzace.
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <textarea class="chat-input" id="chatInput" placeholder="Napište svůj dotaz nebo prompt..." rows="2"></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">Odeslat</button>
+                </div>
+            </div>
+            <button class="toggle-chat" onclick="toggleChat()">💬</button>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const sectionId = item.dataset.section;
+
+                // Update nav
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                // Update content
+                sections.forEach(section => section.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+
+                // Scroll to top
+                document.querySelector('.content-area').scrollTop = 0;
+
+                // Close mobile sidebar
+                document.getElementById('sidebar').classList.remove('open');
+            });
+        });
+
+        // Mobile sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Toggle chat
+        function toggleChat() {
+            document.getElementById('chatPanel').classList.toggle('minimized');
+        }
+
+        // Copy code
+        function copyCode(btn) {
+            const code = btn.parentElement.querySelector('pre').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Zkopírováno!';
+                setTimeout(() => btn.textContent = 'Kopírovat', 2000);
+            });
+        }
+
+        // Chat functionality
+        const apiKeyInput = document.getElementById('apiKey');
+        const apiStatus = document.getElementById('apiStatus');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Load API key from localStorage
+        const savedApiKey = localStorage.getItem('anthropic_api_key');
+        if (savedApiKey) {
+            apiKeyInput.value = savedApiKey;
+            apiStatus.classList.add('connected');
+        }
+
+        // Save API key
+        apiKeyInput.addEventListener('change', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('anthropic_api_key', key);
+                apiStatus.classList.add('connected');
+            } else {
+                localStorage.removeItem('anthropic_api_key');
+                apiStatus.classList.remove('connected');
+            }
+        });
+
+        // Send message on Enter (Shift+Enter for new line)
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const apiKey = apiKeyInput.value.trim();
+            const message = chatInput.value.trim();
+
+            if (!apiKey) {
+                alert('Prosím zadejte Anthropic API klíč.');
+                return;
+            }
+
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            chatInput.value = '';
+            sendBtn.disabled = true;
+
+            // Add typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.innerHTML = `
+                <div class="message-label">Claude</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1024,
+                        system: `Jsi AI asistent pro workshop "AI Masterclass" určený společnosti PF komplet (úklidová firma). Odpovídej v češtině, stručně a prakticky. Pomáhej s příklady promptů, vysvětluj koncepty AI a asistuj s úkoly souvisejícími s úklidovými službami, komunikací se zákazníky, HR a administrativou.`,
+                        messages: [
+                            { role: 'user', content: message }
+                        ]
+                    })
+                });
+
+                // Remove typing indicator
+                typingDiv.remove();
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API chyba');
+                }
+
+                const data = await response.json();
+                const assistantMessage = data.content[0].text;
+                addMessage(assistantMessage, 'assistant');
+
+            } catch (error) {
+                typingDiv.remove();
+                addMessage(`Chyba: ${error.message}`, 'assistant');
+            }
+
+            sendBtn.disabled = false;
+        }
+
+        function addMessage(content, role) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.innerHTML = `
+                <div class="message-label">${role === 'user' ? 'Vy' : 'Claude'}</div>
+                <div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>
+            `;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
